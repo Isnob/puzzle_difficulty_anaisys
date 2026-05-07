@@ -1,2 +1,2 @@
 model_path,data_path,rows,features,best_cv_mae,best_params
-../models/best_text_efficientnet_model.joblib,../data_with_efficientnet_features.csv,327,1289,0.0790426656112144,"{'model__alpha': 1.0, 'preprocessor__ans_tfidf__max_features': 300, 'preprocessor__desc_tfidf__max_features': 500, 'preprocessor__effnet__pca__n_components': 30}"
+../models/best_text_efficientnet_model.joblib,../data_with_efficientnet_features.csv,327,1289,0.0777133680227357,"{'model__alpha': 0.5, 'preprocessor__ans_tfidf__max_features': 2000, 'preprocessor__desc_tfidf__max_features': 500, 'preprocessor__effnet__pca__n_components': 30}"

@@ -232,7 +232,6 @@ def validate_no_leakage(feature_names):
 ├── data.csv
 ├── data_with_efficientnet_features.csv
 ├── extract_efficientnet_features.py
-├── run_experiments.py
 ├── requirements.txt
 ├── README.md
 ├── images/
@@ -285,95 +284,8 @@ def validate_no_leakage(feature_names):
 | `src/puzzle_difficulty/constants.py` | константы проекта: target, leakage-колонки, formula columns, random state |
 | `src/puzzle_difficulty/features.py` | формула сложности, проверка leakage, текстовые и NLP-признаки |
 | `src/puzzle_difficulty/modeling.py` | модели, пайплайны, метрики и кросс-валидация |
-| `run_experiments.py` | единый скрипт для сравнения подходов |
 | `extract_efficientnet_features.py` | извлечение EfficientNet-B0 признаков из изображений |
 
-## Установка и запуск
-
-### 1. Установка зависимостей
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Зависимости:
-
-```text
-pandas
-numpy
-matplotlib
-seaborn
-scikit-learn
-pymorphy3
-torch
-torchvision
-pillow
-tqdm
-jupyter
-joblib
-```
-
-### 2. Проверка структуры изображений
-
-Изображения должны лежать в папке:
-
-```text
-images/daily-rebuses/
-```
-
-Пример сопоставления:
-
-```text
-img_url в датасете: /daily-rebuses/1_v1.jpg
-локальный путь:     images/daily-rebuses/1_v1.jpg
-fallback:           images/daily-rebuses/1.jpg
-```
-
-### 3. Извлечение EfficientNet-признаков
-
-```bash
-python extract_efficientnet_features.py
-```
-
-На выходе создается:
-
-```text
-data_with_efficientnet_features.csv
-```
-
-### 4. Запуск всех основных экспериментов
-
-```bash
-python run_experiments.py
-```
-
-Скрипт:
-
-- читает `data_with_efficientnet_features.csv`;
-- проверяет формулу `difficulty`;
-- строит признаки для подходов `answer_only`, `answer_description`, `nlp`, `efficientnet_only`;
-- выбирает лучший текстовый подход по CV MAE;
-- объединяет лучший текстовый подход с EfficientNet;
-- сохраняет отчеты в `reports/`.
-
-Ожидаемый фрагмент вывода:
-
-```text
-Difficulty formula check:
-  max absolute diff: 0.00004981
-  mean absolute diff: 0.00002555
-Best text approach by CV MAE: nlp
-
-Best model by approach:
-                approach            model  mae_mean  rmse_mean   r2_mean
-3                    nlp            ridge  0.081478   0.100347  0.082087
-0     answer_description            lasso  0.081634   0.098047  0.124918
-4  nlp_plus_efficientnet            ridge  0.081734   0.101110  0.068428
-1            answer_only            lasso  0.087700   0.104280  0.011490
-2      efficientnet_only  extra_trees_pca  0.087742   0.105760 -0.015983
-```
 
 ## Предобработка и feature engineering
 
@@ -1185,40 +1097,6 @@ predictions = model.predict(X_new)
 | Holdout MAE | `presentation/assets/holdout_mae_by_approach.png` | `presentation/assets/holdout_mae_by_approach.svg` |
 | Эффект подбора гиперпараметров | `presentation/assets/tuning_mae_improvement.png` | `presentation/assets/tuning_mae_improvement.svg` |
 | Permutation importance | `presentation/assets/top_permutation_importance.png` | `presentation/assets/top_permutation_importance.svg` |
-
-## Соответствие ТЗ
-
-| Пункт ТЗ | Статус | Где выполнено |
-|---|---|---|
-| 1. Цель: полный цикл данные -> модель -> оценка -> интерпретация -> сохранение | выполнено | `README.md`, ноутбуки `00`-`08`, `models/` |
-| 2. Допустимая область | выполнено | IT / цифровые продукты, текстово-визуальные данные |
-| 3.1 Постановка задачи | выполнено | `README.md`, `00_data_eda_preprocessing.ipynb` |
-| Формулировка проблемы | выполнено | предсказание сложности ребуса до накопления статистики прохождения |
-| Тип задачи | выполнено | регрессия, target `difficulty` |
-| 3.2 Реальный датасет | выполнено | `data.csv`, `images/daily-rebuses/` |
-| Описание признаков | выполнено | `README.md`, `00_data_eda_preprocessing.ipynb` |
-| 3.3 Обработка пропусков | выполнено | `features.py`, ноутбуки `00`-`05` |
-| 3.3 Кодирование категорий | выполнено | текст кодируется через TF-IDF и char n-grams |
-| 3.3 Нормализация | выполнено | `StandardScaler` внутри `Pipeline` и `ColumnTransformer` |
-| 3.3 Feature engineering | выполнено | текстовые признаки, NLP-признаки, EfficientNet-признаки |
-| 3.4 EDA: минимум 5 графиков | выполнено | графики в `presentation/assets/` и ноутбуке `00` |
-| 3.4 Анализ распределений | выполнено | распределение `difficulty`, длина ответа |
-| 3.4 Корреляции | выполнено | `allowed_features_correlation_heatmap` |
-| 3.4 Минимум 3 вывода | выполнено | выводы EDA в README, презентации и ноутбуке `00` |
-| 3.5 Baseline модель | выполнено | `DummyRegressor`, `LinearRegression`, `Ridge` |
-| 3.5 Классические ML | выполнено | `Lasso`, `ElasticNet`, `SVR`, `KNN` |
-| 3.5 Ансамблевые модели | выполнено | `RandomForest`, `ExtraTrees`, `GradientBoosting` |
-| 3.5 Deep learning опционально | выполнено как extractor | EfficientNet-B0 для image embeddings |
-| 3.6 RMSE, MAE, R2 | выполнено | `reports/`, ноутбук `06`, `modeling.py` |
-| 3.6 Сравнительная таблица моделей | выполнено | `reports/all_model_metrics.csv` |
-| 3.7 Подбор гиперпараметров | выполнено | ноутбук `07`, `GridSearchCV` |
-| 3.8 Feature importance | выполнено | permutation importance, `top_permutation_importance` |
-| 3.8 Объяснение решений модели | выполнено | ноутбук `07`, анализ важности и ошибок |
-| 3.9 Проверка гипотез | выполнено | ноутбук `08` |
-| 4. Архитектура Data -> Preprocessing -> Model -> Evaluation -> Saving | выполнено | `run_experiments.py`, `src/`, `reports/`, `models/` |
-| MLflow | не выполнено | это дополнительный плюс, не обязательное требование |
-| GitHub репозиторий | выполнено | код, ноутбуки, README, данные, отчеты, презентация |
-| Презентация | выполнено | `presentation/project_presentation.md`, `presentation/assets/` |
 
 ## Ограничения и дальнейшее развитие
 
